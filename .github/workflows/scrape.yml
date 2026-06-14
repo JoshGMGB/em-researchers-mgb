@@ -1,0 +1,38 @@
+name: Update Citation Data
+
+on:
+  schedule:
+    # Run weekly on Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run scraper
+        run: npm run scrape
+      
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          if git diff --quiet stats-mgb.js; then
+            echo "No changes to citation data"
+          else
+            git add stats-mgb.js
+            git commit -m "Update researcher data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          fi
+    
