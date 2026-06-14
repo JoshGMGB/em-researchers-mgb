@@ -1,0 +1,17 @@
+{
+  "name": "em-researchers-mgb",
+  "version": "1.0.0",
+  "description": "Citation statistics scraper for Emergency Medicine researchers at Mass General Brigham",
+  "main": "scrape.js",
+  "scripts": {
+    "scrape": "node scrape.js ./people-mgb.json > stats-mgb.js"
+  },
+  "dependencies": {
+    "async": "^3.2.6",
+    "cheerio": "^1.0.0",
+    "request": "^2.88.2"
+  },
+  "keywords": ["citations", "google-scholar", "emergency-medicine"],
+  "author": "",
+  "license": "MIT"
+}
