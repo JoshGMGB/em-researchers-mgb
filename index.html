@@ -1,0 +1,177 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Emergency Medicine Researchers - Mass General Brigham</title>
+<link rel="stylesheet" href="tablesorter/style.css" type="text/css" media="print, projection, screen" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<link rel="stylesheet" href="tablesorter/theme.dropbox.css">
+<script src="tablesorter/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="stats-mgb.js"></script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    h1 {
+        color: #333;
+    }
+    
+    .header-info {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .keywords {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        border-left: 4px solid #0066cc;
+    }
+    
+    .keywords input {
+        margin-right: 10px;
+    }
+    
+    .keywords span {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 10px;
+    }
+    
+    #FilterTextBox {
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    #date {
+        font-size: 12px;
+        color: #666;
+        margin: 15px 0;
+    }
+    
+    table {
+        margin-top: 20px;
+        width: 100%;
+    }
+</style>
+</head>
+<body>
+
+<h1>Citation Statistics of Emergency Medicine Researchers</h1>
+<h3>Mass General Brigham</h3>
+
+<div class="header-info">
+    <p><strong>About:</strong> This table displays citation statistics for Emergency Medicine researchers at Mass General Brigham, scraped from their Google Scholar profiles.</p>
+    <p><strong>Data:</strong> The table shows publications count, citation count, h-index, and i10-index. The "/y" columns show these metrics normalized by years since first citation.</p>
+    <p><strong>Editorial Note:</strong> This list contains only researchers who have a Google Scholar profile. If you wish to see a name added, please contact the maintainer.</p>
+</div>
+
+<div class="keywords">
+    <span><b>Search:</b> <input size="35" type="text" id="FilterTextBox" name="FilterTextBox" placeholder="e.g., name, affiliation, or keywords" /></span>
+</div>
+
+<div id="date" style="font-size:smaller;">Data scraped from Google Scholar: "name", "citations", "h-index", and "i10-index" are from author profile; "year" denotes year of first citation.</div>
+
+<table id="stats" border="0" class="tablesorter-dropbox tablesorter filterable keywordfilterable">
+<thead> 
+<tr>
+    <th width="55" style="text-align:center;">Rank</th>
+    <th width="250">Name/Affiliation</th>
+    <th width="50" style="text-align:center;">Year</th>
+    <th width="90" style="text-align:center;">Citations</th>
+    <th width="30" style="text-align:center;">/y</th>
+    <th width="80" style="text-align:center;">h-index</th>
+    <th width="30" style="text-align:center;">/y</th>
+    <th width="85" style="text-align:center;">i10-index</th>
+    <th width="30" style="text-align:center;">/y</th>
+</tr> 
+</thead> 
+</table>
+
+<script>
+function round(n) {
+  return Math.round(n*10)/10;
+}
+
+// Populate table with researcher data
+for (var i=0; i< data.length; i++) {
+  if (typeof data[i].stats === 'undefined') continue;
+
+  var regex = /user=([^&]+)/;
+  var match = regex.exec(data[i].url);
+  var userId = match[1];
+
+  var row = $('<tr/>');
+  row.append($('<td class="rankColumn" />'));
+  var currentYear = new Date().getFullYear();
+  var y = (data[i].year < currentYear) ? (currentYear - data[i].year) : 1;
+  row.append($('<td style="text-align: left"/>').html('<a href="' + data[i].url + '" target="_blank">' + data[i].name + '</a><br />' + data[i].affiliation ));
+  row.append($('<td/>').html(data[i].year));
+  row.append($('<td/>').html(data[i].stats.citations[0]));
+  row.append($('<td/>').html(Math.round(data[i].stats.citations[0]/y)));
+  row.append($('<td/>').html(data[i].stats.hindex[0]));
+  row.append($('<td/>').html(round(data[i].stats.hindex[0]/y)));
+  row.append($('<td/>').html(data[i].stats.i10index[0]));
+  row.append($('<td/>').html(round(data[i].stats.i10index[0]/y)));
+  row.append($('<td class="indexColumn" hidden="true" />').html(data[i].name.toLowerCase() + ' ' + data[i].affiliation.toLowerCase()));
+  $("#stats").append(row);
+}
+
+// Initialize table sorting and filtering
+$(document).ready(function() { 
+  $("#date").append("<br/><small>Last updated: " + date + "</small>");
+  
+  // Sort by h-Index (descending) and Citations (descending)
+  $("#stats").tablesorter({
+    sortList: [[5, 1], [3, 1]],
+    headers: {
+      0: { sorter: false }, 
+      1: { sorter: false }, 
+      2: { sorter: false }, 
+      4: { sorter: false }, 
+      6: { sorter: false }, 
+      8: { sorter: false }
+    }
+  });  
+
+  // Update rank numbers after sorting
+  var table = $("#stats");
+  table.bind("sortEnd",function() {
+    var i = 1;
+    table.find("tr:gt(0)").each(function() {
+      $(this).find("td:eq(0)").attr('name', i);
+      $(this).find("td:eq(0)").text(i);
+      i++;
+    });
+  });
+
+  // Add index column for searching
+  $(".filterable tr:has(td)").each(function(){
+    var t = $(this).text().toLowerCase();
+    $("<td class='indexColumn'></td>")
+     .hide().text(t).appendTo(this);
+  });
+  
+  // Filter table as user types
+  $("#FilterTextBox").keyup(function(){
+    var s = $(this).val().toLowerCase().split(" ");
+    $(".filterable tr:hidden").show();
+    $.each(s, function(){
+        $(".filterable tr:visible .indexColumn:not(:contains(''
+           + this + ''))").parent().hide();
+    });
+  });
+});
+</script>
+
+</body>
+</html>
